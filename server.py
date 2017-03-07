@@ -4,7 +4,7 @@ import sql
 import jieba
 import jieba.posseg as seg
 import numpy as np
-jieba.load_userdict("dict.txt")
+jieba.load_userdict("myDict.txt")
 
 # 词典
 vocabulary = set([])
@@ -104,7 +104,7 @@ def train(tfidf, word_id):
 if __name__ == "__main__":
     (tfidf, word_id, ims) = getTrainData()
     train(tfidf, word_id)
-    print ims[2][4], ims[2][5]
+    print ims[0][4], ims[0][5]
 
     print "tfidf: ", len(tfidf)
     print 'word_id', len(word_id)
