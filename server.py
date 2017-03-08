@@ -4,6 +4,7 @@ import sql
 import jieba
 import jieba.posseg as seg
 import numpy as np
+import kmeans
 jieba.load_userdict("myDict.txt")
 
 # 词典
@@ -74,6 +75,8 @@ def getTrainData():
     new_ims = []
     ques_cnt = len(ims)
 
+    words_set = set([])
+
     for im in ims:
         # print im[1], im[3], im[4]
         cut_words = seg.cut(im[4])
@@ -82,10 +85,14 @@ def getTrainData():
                  word not in stop_words and not word.isdigit() and word.strip() != '' and len(
                      word) != 1]
         if len(words) == 0: continue
+        word_join = ' '.join(words)
+        if word_join in words_set:
+            continue
+        else:
+            words_set.add(word_join)
         vocabulary |= set(words)
-        # new_ims.append(list(im).append(words))
         tmp = list(im)
-        tmp.append(' '.join(words))
+        tmp.append(word_join)
         new_ims.append(tmp)
 
     vocabulary = list(vocabulary)
@@ -94,17 +101,37 @@ def getTrainData():
     return (tfidf, word_id, new_ims)
 
 
-def train(tfidf, word_id):
+def train(tfidf, word_id, k):
     global vocabulary
-
-
-
+    dataSet = []
+    for i in range(len(tfidf)):
+        data = [0] * len(vocabulary)
+        for j in range(len(tfidf[i])):
+            data[word_id[i][j]] = tfidf[i][j]
+        dataSet.append(data)
+    clust, cent = kmeans.kmeans(dataSet, k)
+    return clust
 
 
 if __name__ == "__main__":
     (tfidf, word_id, ims) = getTrainData()
-    train(tfidf, word_id)
-    print ims[0][4], ims[0][5]
+
+    k = 6
+    # for k in range(3,11):
+    #     print "k = ", k
+    #     clust = train(tfidf, word_id, k)
+    #     # print clust
+    #     print sum(clust[:, 1])
+
+    clust = train(tfidf, word_id, k)
+
+    for i in range(k):
+        print '*'* 20,'type : %d' % i, '*'*20
+        subclust = np.nonzero(clust[:, 0] == i)[0]
+        subclust = list(np.array(subclust)[0])
+        for x in subclust:
+            print ims[x][4]
+
 
     print "tfidf: ", len(tfidf)
     print 'word_id', len(word_id)
