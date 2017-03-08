@@ -80,11 +80,11 @@ def getTrainData():
     for im in ims:
         # print im[1], im[3], im[4]
         cut_words = seg.cut(im[4])
-        cut_words = [list(word)[0].encode('utf8') for word in list(cut_words)]
+        cut_words = [str(word).split('/')[0] for word in list(cut_words)]
+
         words = [word for word in cut_words if
-                 word not in stop_words and not word.isdigit() and word.strip() != '' and len(
-                     word) != 1]
-        if len(words) == 0: continue
+                 word not in stop_words and not word.isdigit() and word.strip() != '' ]
+        if len(words) <= 1: continue
         word_join = ' '.join(words)
         if word_join in words_set:
             continue
@@ -94,6 +94,7 @@ def getTrainData():
         tmp = list(im)
         tmp.append(word_join)
         new_ims.append(tmp)
+        # print tmp[4], ' * ', tmp[5]
 
     vocabulary = list(vocabulary)
 
