@@ -55,4 +55,30 @@ def kmeans(dataSet, k, distEclud=distCos, randCent=randCent):
     return clust, cent
 
 
-
+def biKmeans(dataSet, k, distMeans=distCos):
+    m = shape(dataSet)[0]
+    clust = mat(zeros((m, 2)))
+    cent = mean(dataSet, axis=0).tolist()[0]
+    centList = [cent]  # create a list with one centroid
+    for i in range(m):
+        clust[i, 1] = distMeans(np.mat(cent), dataSet[i, :])
+    while len(centList) < k:
+        minSSE = np.inf
+        for i in range(len(centList)):
+            ptsInCurClust = dataSet[np.nonzero(clust[:, 0].A == i)[0], :]
+            subClust, subCent = kmeans(ptsInCurClust, 2, distMeans)
+            sseSubClust = np.sum(subClust[:, 1])
+            sseNotSubClust = np.sum(clust[np.nonzero(clust[:, 0].A != i)[0], 1])
+            if sseSubClust + sseNotSubClust < minSSE:
+                minIdx = i
+                minSubCent = subCent
+                minSubClust = subClust.copy()
+                minSSE = sseSubClust + sseNotSubClust
+        minSubClust[np.nonzero(minSubClust[:, 0] == 1)[0], 0] = len(centList)
+        minSubClust[np.nonzero(minSubClust[:, 0] == 0)[0], 0] = minIdx
+        print 'the bestCentToSplit is: ', minIdx
+        print 'the len of bestClustAss is: ', len(minSubClust)
+        centList[minIdx] = minSubCent[0, :].tolist()[0]
+        centList.append(minSubCent[1, :].tolist()[0])
+        clust[np.nonzero(clust[:, 0].A == minIdx)[0], :] = minSubClust
+    return clust, mat(centList)

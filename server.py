@@ -164,7 +164,8 @@ def train(tfidf, word_id, k):
         for j in range(len(tfidf[i])):
             data[word_id[i][j]] = tfidf[i][j]
         dataSet.append(data)
-    clust, cent = kmeans.kmeans(dataSet, k)
+    # clust, cent = kmeans.kmeans(dataSet, k)
+    clust, cent = kmeans.biKmeans(np.mat(dataSet), k)
     return clust
 
 
