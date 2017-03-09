@@ -24,7 +24,7 @@ def get_tf(words, idf):
     tf = dict({})
     for word in words:
         tf[word] = tf.setdefault(word, 0) + 1
-    return [float(tf[word])*idf[word] for word in words]
+    return [float(tf[word])*idf[word] for word in set(words)]
 
 
 def get_idf(ims, ques_cnt):
@@ -35,7 +35,7 @@ def get_idf(ims, ques_cnt):
             df[word] = df.setdefault(word, 0) + 1
     # convert to idf
     for (key, val) in df.items():
-        df[key] = np.log(float(ques_cnt)/val)
+        df[key] = np.log(float(ques_cnt)/val)         # wait to update  *************
     return df
 
 
@@ -64,6 +64,19 @@ def get_stop_words():
             line = line.replace('\n', '')
             stop_words.append(line)
     return stop_words
+
+
+# 计算编辑距离
+def levenshtein(str1, str2):
+    n1 = len(str1) + 1; n2 = len(str2) + 1
+    dp = [range(i, n2+i) for i in range(n1) ]
+    for i in range(1, n1):
+        for j in range(1, n2):
+            if str1[i-1] == str2[j-1]:
+                dp[i][j] = dp[i-1][j-1]
+            else:
+                dp[i][j] = min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+1)
+    return dp[n1-1][n2-1]
 
 
 # 用编辑距离计算相识性
@@ -105,18 +118,6 @@ def is_sim(ims, words):
     return -1
 
 
-def levenshtein(str1, str2):
-    n1 = len(str1) + 1; n2 = len(str2) + 1
-    dp = [range(i, n2+i) for i in range(n1) ]
-    for i in range(1, n1):
-        for j in range(1, n2):
-            if str1[i-1] == str2[j-1]:
-                dp[i][j] = dp[i-1][j-1]
-            else:
-                dp[i][j] = min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+1)
-    return dp[n1-1][n2-1]
-
-
 def getTrainData():
     global vocabulary
     ims = sql.fetchall(sql.get_allIM_word())
@@ -130,7 +131,7 @@ def getTrainData():
         cut_words = [str(word).split('/')[0] for word in list(cut_words)]
 
         words = [word for word in cut_words if
-                 word not in stop_words and not word.isdigit() and word.strip() != '' ]
+                 word not in stop_words and not word.isdigit() and word.strip() != '']
         if len(words) <= 1: continue
         # 若有相识的问题，保留较长的那个问题
         sim1 = is_sim(new_ims, words)
@@ -138,8 +139,8 @@ def getTrainData():
         if sim1 >= 0 or sim2 >= 0:
             sim_idx = max(sim1, sim2)
             if len(new_ims[sim_idx][4]) < len(im[4]):
-                print sim1, sim2
-                print im[4], new_ims[sim_idx][4]
+                # print sim1, sim2
+                # print im[4], new_ims[sim_idx][4]
                 new_ims.pop(sim_idx)
             else: continue
 

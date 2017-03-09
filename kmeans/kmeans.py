@@ -51,11 +51,7 @@ def kmeans(dataSet, k, distEclud=distCos, randCent=randCent):
             ptsInClust = dataSet[np.nonzero(clust[:, 0].A == i)[0]]
             if len(ptsInClust) == 0 : continue
             cent[i, :] = np.mean(ptsInClust, axis=0)
-
-
         if cnt>50:break
-
-
     return clust, cent
 
 
